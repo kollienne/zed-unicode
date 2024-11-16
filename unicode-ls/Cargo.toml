@@ -1,0 +1,10 @@
+[package]
+name = "unicode-ls"
+version.workspace = true
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.39.3", features = ["full"] }
+simple-completion-language-server = { git = "https://github.com/zed-industries/simple-completion-language-server.git" }
+etcetera = "0.8"
+url = "2.5.2"
