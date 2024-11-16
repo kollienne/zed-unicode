@@ -1,6 +1,21 @@
 use std::collections::HashMap;
 
 use simple_completion_language_server::*;
+use snippets::Snippet;
+
+fn capitalize(s: String) -> String {
+    let mut v: Vec<char> = s.chars().collect();
+    v[0] = v[0].to_uppercase().next().unwrap();
+    v.into_iter().collect()
+}
+
+fn get_prefix(s: &str) -> String {
+    if s.len() < 4 {
+        s[0..2].to_string()
+    } else {
+        s[0..4].to_string()
+    }
+}
 
 #[tokio::main]
 async fn main() {
@@ -8,7 +23,7 @@ async fn main() {
     let stdout = tokio::io::stdout();
 
     let snippets = include_str!("data.txt");
-    let mut unicode = HashMap::new();
+    let mut unicode = vec![];
     for line in snippets.split("\n") {
         if line.is_empty() {
             continue;
@@ -26,16 +41,22 @@ async fn main() {
             continue;
         };
 
-        unicode.insert(alias.to_string(), format!("{c}"));
-    }
+        let alias = alias.to_lowercase();
+        let prefix = get_prefix(&alias);
 
-    println!("meow {:#?}", unicode);
+        unicode.push(Snippet {
+            scope: None,
+            prefix,
+            description: Some(capitalize(alias)),
+            body: format!("{c}"),
+        });
+    }
 
     server::start(
         stdin,
         stdout,
-        vec![],
         unicode,
+        HashMap::new(),
         etcetera::home_dir().unwrap().to_str().unwrap().into(),
     )
     .await;
