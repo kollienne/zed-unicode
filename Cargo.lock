@@ -1224,7 +1224,11 @@ dependencies = [
 
 [[package]]
 name = "unicode"
+<<<<<<< HEAD
 version = "0.0.5"
+=======
+version = "0.0.4"
+>>>>>>> origin/main
 dependencies = [
  "zed_extension_api",
 ]
@@ -1237,7 +1241,11 @@ checksum = "e91b56cd4cadaeb79bbf1a5645f6b4f8dc5bde8834ad5894a8db35fda9efa1fe"
 
 [[package]]
 name = "unicode-ls"
+<<<<<<< HEAD
 version = "0.0.5"
+=======
+version = "0.0.4"
+>>>>>>> origin/main
 dependencies = [
  "etcetera",
  "simple-completion-language-server",
