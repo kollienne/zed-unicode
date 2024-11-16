@@ -10,7 +10,7 @@ members = ["unicode-ls"]
 crate-type = ["cdylib"]
 
 [workspace.package]
-version = "0.0.3"
+version = "0.0.4"
 
 [dependencies]
 zed_extension_api = "0.1.0"
@@ -19,10 +19,10 @@ zed_extension_api = "0.1.0"
 inherits = "release"
 lto = "thin"
 
-# Config for 'cargo dist'
+# Config for 'dist'
 [workspace.metadata.dist]
-# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.22.0"
+# The preferred dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.25.1"
 # CI backends to support
 ci = "github"
 # The archive format to use for non-windows builds (defaults .tar.xz)
