@@ -10,11 +10,15 @@ fn capitalize(s: String) -> String {
 }
 
 fn get_prefix(s: &str) -> String {
-    if s.len() < 4 {
-        s[0..2].to_string()
-    } else {
-        s[0..4].to_string()
-    }
+    let s = s.replace("LATIN ", "");
+    let s = s.replace("BALINESE ", "");
+    let s = s.replace("GREEK ", "");
+    let s = s.replace("TAI THAM HORA ", "");
+    let s = s.replace("THAM COMBINING CRYPTOGRAMMIC ", "");
+    let s = s.replace("TAI THAM SIGN ", "");
+    let s = s.replace("TAI THAM VOWEL ", "");
+    let s = s.replace(" ", "-");
+    s
 }
 
 #[tokio::main]
