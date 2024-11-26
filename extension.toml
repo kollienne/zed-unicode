@@ -1,6 +1,6 @@
 id = "unicode"
 name = "Unicode"
-version = "0.1.2"
+version = "0.1.3"
 schema_version = 1
 authors = ["Gabrielle Guimarães de Oliveira <gabrielle1guim@gmail.com>"]
 description = "Unicode characters for Zed"
