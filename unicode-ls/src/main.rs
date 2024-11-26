@@ -7,13 +7,17 @@ use snippets::Snippet;
 macro_rules! create_snippet_map {
     ($($k:expr => $v:expr),*) => {{
         let mut v = vec![];
+        let mut h = vec![];
         $(
-            v.push(Snippet {
-                scope: None,
-                prefix: $k.to_string(),
-                description: Some($v.to_string().clone()),
-                body: $v.to_string(),
-            });
+            if !h.contains(&$k.to_string()) {
+                v.push(Snippet {
+                    scope: None,
+                    prefix: $k.to_string(),
+                    description: Some($v.to_string().clone()),
+                    body: $v.to_string(),
+                });
+                h.push($k.to_string());
+            }
         )*
         v
     }};
@@ -81,26 +85,25 @@ async fn main() {
         "^" => '∧',
         "land" => '∧',
         "*" => '·',
-        "*" => 'º',
+        "^*" => 'º',
         "1/2" => '½',
         "1/4" => '¼',
         "3/4" => '¾',
         "x" => '×',
-        "*" => '×',
-        "o" => 'Ø',
+        "o/" => 'Ø',
         "empty" => 'Ø',
         "div" => '÷',
         "/" => '÷',
         "E" => 'Ɛ',
         "f" => 'ƒ',
-        "w" => 'Ɯ',
+        "W" => 'Ɯ',
         "lambda" => 'ƛ',
         "o" => 'Ɵ',
         "T" => 'Ƭ',
         "Y" => 'Ʊ',
         "V" => 'Ʋ',
-        "Z" => 'Ƶ',
-        "z" => 'ƶ',
+        "Z/" => 'Ƶ',
+        "z/" => 'ƶ',
         "3" => 'Ʒ',
         "E" => 'Ƹ',
         "e" => 'ƹ',
@@ -134,8 +137,10 @@ async fn main() {
         "f" => '∫',
         "f-" => '∮',
         "ff" => '∬',
+        "open parenthesis" => '⟨',
         "(" => '⟨',
         ")" => '⟩',
+        "close parenthesis" => '⟩',
         "monad" => '⊙',
         "lor" => '∨',
         "vee" => '∨',
@@ -143,14 +148,13 @@ async fn main() {
         "parallel" => '∥',
         "oplus" => '⊕',
         "veebar" => '⊻',
-        "notequiv" => '≢',
+        "not equiv" => '≢',
         "!=" => '≢',
         "top" => '⊤',
         "T" => '⊤',
         "bot" => '⊥',
         "forall" => '∀',
         "A" => '∀',
-        "E" => '∃',
         "exists" => '∃',
         "vdash" => '⊢',
         "turnstile" => '⊢',
@@ -190,7 +194,6 @@ async fn main() {
         "Lambda" => 'Λ',
         "^" => 'Λ',
         "mu" => 'μ',
-        "u" => 'μ',
         "E" => 'ξ',
         "xi" => 'ξ',
         "===" => 'Ξ',
@@ -211,20 +214,7 @@ async fn main() {
         "psi" => 'ψ',
         "Psi" => 'Ψ',
         "omega" => 'ω',
-        "Omega" => 'Ω',
-        "^~~" => " ͌",
-        "^*/*" => " ͋",
-        "^!~" => " ͊",
-        "_=" => " ͇",
-        "^=" => " ̿",
-        "^x" => " ̽",
-        "^*" => " ̽",
-        "_-" => " ̲",
-        "_T" => " ̞",
-        "_+" => " ̟",
-        "_bot" => " ̞",
-        "_|-" => " ̙",
-        "^o" => " ̊"
+        "Omega" => 'Ω'
     };
 
     dbg!(cli.include_all_symbols);
@@ -261,19 +251,25 @@ async fn main() {
         }
     }
 
+    let all_snippets = snippets
+        .into_iter()
+        .filter(|s| {
+            !s.body.is_empty()
+                && match &s.description {
+                    Some(s) => !s.is_empty(),
+                    None => false,
+                }
+        })
+        .collect();
+
+    // turnstile
+
+    dbg!(&all_snippets);
+
     server::start(
         stdin,
         stdout,
-        snippets
-            .into_iter()
-            .filter(|s| {
-                !s.body.is_empty()
-                    && match &s.description {
-                        Some(s) => !s.is_empty(),
-                        None => false,
-                    }
-            })
-            .collect(),
+        all_snippets,
         HashMap::new(),
         etcetera::home_dir().unwrap().to_str().unwrap().into(),
     )
