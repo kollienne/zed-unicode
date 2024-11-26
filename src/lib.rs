@@ -3,7 +3,9 @@
 //! Copyright (c) 2024 Marshall Bowers
 
 use std::fs;
-use zed_extension_api::{self as zed, Command, LanguageServerId, Result, Worktree};
+use zed_extension_api::{
+    self as zed, settings::LspSettings, Command, LanguageServerId, Result, Worktree,
+};
 
 struct UnicodeExtension {
     cached_ls_binary_path: Option<String>,
@@ -14,16 +16,15 @@ impl UnicodeExtension {
         let (platform, arch) = zed::current_platform();
         let (arch, os) = {
             let arch = match arch {
-                zed::Architecture::Aarch64 if binary == "unicode-ls" => "aarch64",
+                zed::Architecture::Aarch64 => "aarch64",
                 zed::Architecture::X8664 if binary == "unicode-ls" => "x86_64",
                 _ => return Err(format!("unsupported architecture: {arch:?}")),
             };
 
             let os = match platform {
-                zed::Os::Mac if binary == "unicode-ls" => "apple-darwin",
-                zed::Os::Linux if binary == "unicode-ls" => "unknown-linux-gnu",
-                zed::Os::Windows if binary == "unicode-ls" => "pc-windows-msvc",
-                _ => return Err("unsupported platform".to_string()),
+                zed::Os::Mac => "apple-darwin",
+                zed::Os::Linux => "unknown-linux-gnu",
+                zed::Os::Windows => "pc-windows-msvc",
             };
 
             (arch, os)
@@ -136,9 +137,22 @@ impl zed::Extension for UnicodeExtension {
         worktree: &Worktree,
     ) -> Result<Command> {
         let ls_binary_path = self.language_server_binary_path(language_server_id, worktree)?;
+        let settings = LspSettings::for_worktree("unicode", worktree)
+            .map(|lsp_settings| lsp_settings.settings)
+            .unwrap_or_default()
+            .unwrap_or(serde_json::json!({
+                "include_all_symbols": false
+            }));
+
+        let args = settings
+            .get("include_all_symbols")
+            .and_then(|x| x.as_bool())
+            .filter(|x| *x)
+            .map(|_| vec!["--include_all_symbols".into()])
+            .unwrap_or_default();
 
         Ok(Command {
-            args: vec![],
+            args,
             command: ls_binary_path,
             env: worktree.shell_env(),
         })
