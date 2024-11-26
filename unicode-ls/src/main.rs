@@ -214,7 +214,8 @@ async fn main() {
         "psi" => 'ψ',
         "Psi" => 'Ψ',
         "omega" => 'ω',
-        "Omega" => 'Ω'
+        "Omega" => 'Ω',
+        "->>" => '↠'
     };
 
     dbg!(cli.include_all_symbols);
