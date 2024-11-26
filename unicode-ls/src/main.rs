@@ -1,4 +1,4 @@
-use std::{collections::HashMap, process::Command};
+use std::collections::HashMap;
 
 use clap::Parser;
 use simple_completion_language_server::*;
@@ -12,7 +12,7 @@ macro_rules! create_snippet_map {
                 scope: None,
                 prefix: $k.to_string(),
                 description: Some($v.to_string().clone()),
-                body: value,
+                body: $v.to_string(),
             });
         )*
         v
