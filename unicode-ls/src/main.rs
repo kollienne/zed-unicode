@@ -36,7 +36,7 @@ fn get_prefix(s: &str) -> Option<String> {
 }
 
 #[derive(Parser)]
-#[clap(version, long, long_about = None, about = "Unicode language server")]
+#[clap(version, long_about = None, about = "Unicode language server")]
 struct Cli {
     #[arg(short, long)]
     include_all_symbols: bool,
@@ -226,6 +226,8 @@ async fn main() {
         "_|-" => " ̙",
         "^o" => " ̊"
     };
+
+    dbg!(cli.include_all_symbols);
 
     if cli.include_all_symbols {
         for line in include_str!("data.txt").split("\n") {
