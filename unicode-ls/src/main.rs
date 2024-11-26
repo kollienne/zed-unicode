@@ -1,13 +1,21 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, process::Command};
 
+use clap::Parser;
 use simple_completion_language_server::*;
 use snippets::Snippet;
 
 macro_rules! create_snippet_map {
     ($($k:expr => $v:expr),*) => {{
-        let mut m = std::collections::HashMap::new();
-        $(m.insert($k.to_string(), format!("{}", $v)));*;
-        m
+        let mut v = vec![];
+        $(
+            v.push(Snippet {
+                scope: None,
+                prefix: $k.to_string(),
+                description: Some($v.to_string().clone()),
+                body: value,
+            });
+        )*
+        v
     }};
 }
 
@@ -27,13 +35,20 @@ fn get_prefix(s: &str) -> Option<String> {
     Some(s)
 }
 
+#[derive(Parser)]
+#[clap(version, long, long_about = None, about = "Unicode language server")]
+struct Cli {
+    #[arg(short, long)]
+    include_all_symbols: bool,
+}
+
 #[tokio::main]
 async fn main() {
+    let cli = Cli::parse();
     let stdin = tokio::io::stdin();
     let stdout = tokio::io::stdout();
 
-    let mut snippets = vec![];
-    let unicode: HashMap<String, String> = create_snippet_map! {
+    let mut snippets = create_snippet_map! {
         "Rightarrow" => '⇒',
         "=>" => '⇒',
         "rightarrow" => '→',
@@ -48,6 +63,20 @@ async fn main() {
         "lnot" => '¬',
         "neg" => '¬',
         "!=" => '¬',
+        "=" => '＝',
+        "->" => "⇨",
+        "_0" => '₀',
+        "_1" => '₁',
+        "_2" => "₂",
+        "|>" => "▸",
+        "<-" => '←',
+        "<=" => '⇐',
+        "^-1" => "⁻¹",
+        "~~~" => '≋',
+        "<|" => '◂',
+        "2" => '𝟚',
+        "^e" => 'ᵉ',
+        "*" => '★',
         "wedge" => '∧',
         "^" => '∧',
         "land" => '∧',
@@ -182,46 +211,52 @@ async fn main() {
         "psi" => 'ψ',
         "Psi" => 'Ψ',
         "omega" => 'ω',
-        "Omega" => 'Ω'
+        "Omega" => 'Ω',
+        "^~~" => " ͌",
+        "^*/*" => " ͋",
+        "^!~" => " ͊",
+        "_=" => " ͇",
+        "^=" => " ̿",
+        "^x" => " ̽",
+        "^*" => " ̽",
+        "_-" => " ̲",
+        "_T" => " ̞",
+        "_+" => " ̟",
+        "_bot" => " ̞",
+        "_|-" => " ̙",
+        "^o" => " ̊"
     };
 
-    for (name, value) in unicode {
-        snippets.push(Snippet {
-            scope: None,
-            prefix: name.clone(),
-            description: Some(value.clone()),
-            body: value,
-        });
-    }
+    if cli.include_all_symbols {
+        for line in include_str!("data.txt").split("\n") {
+            if line.is_empty() {
+                continue;
+            }
+            let line = line.split(";").collect::<Vec<_>>();
+            let [c, alias, ..] = line.as_slice() else {
+                continue;
+            };
 
-    for line in include_str!("data.txt").split("\n") {
-        if line.is_empty() {
-            continue;
+            let Ok(c) = u32::from_str_radix(c, 16) else {
+                continue;
+            };
+
+            let Ok(c) = char::try_from(c) else {
+                continue;
+            };
+
+            let alias = alias.to_lowercase();
+            let Some(prefix) = get_prefix(&alias) else {
+                continue;
+            };
+
+            snippets.push(Snippet {
+                scope: None,
+                prefix,
+                description: Some(format!("{c}")),
+                body: format!("{c}"),
+            });
         }
-        let line = line.split(";").collect::<Vec<_>>();
-        let [c, alias, ..] = line.as_slice() else {
-            continue;
-        };
-
-        let Ok(c) = u32::from_str_radix(c, 16) else {
-            continue;
-        };
-
-        let Ok(c) = char::try_from(c) else {
-            continue;
-        };
-
-        let alias = alias.to_lowercase();
-        let Some(prefix) = get_prefix(&alias) else {
-            continue;
-        };
-
-        snippets.push(Snippet {
-            scope: None,
-            prefix,
-            description: Some(format!("{c}")),
-            body: format!("{c}"),
-        });
     }
 
     server::start(
